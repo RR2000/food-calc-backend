@@ -1,5 +1,7 @@
 package com.rondinella.foodcalc.foodcalc.dtos;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +13,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDTO {
+public class ProductDTO implements Serializable {
     String name;
     Integer kcal;
 }

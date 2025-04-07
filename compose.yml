@@ -1,5 +1,34 @@
+version: '3.8'
+
 services:
   redis:
     image: redis:latest
+    container_name: redis
+    restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - redis-net
+    command: redis-server --appendonly yes
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: always
+    ports:
+      - "5540:5540"
+    networks:
+      - redis-net
+    depends_on:
+      - redis
+    environment:
+      - REDISINSIGHT_REDIS_HOSTS=local:redis:6379
+
+volumes:
+  redis_data:
+
+networks:
+  redis-net:
+    driver: bridge

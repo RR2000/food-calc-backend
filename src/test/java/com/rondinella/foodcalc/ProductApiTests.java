@@ -115,7 +115,7 @@ class ProductApiTests {
         switch (code) {
           case "3017620422003" -> body = """
               {"code":"3017620422003","status":1,"product":{"product_name":"Hazelnut spread","brands":"Brand A, Brand B",
-               "quantity":"400 g","image_front_small_url":"https://images.example/front.jpg",
+               "quantity":"400 g e","image_front_small_url":"https://images.example/front.jpg",
                "nutriments":{"energy-kcal_100g":539,"proteins_100g":6.3,"carbohydrates_100g":57.5,
                "sugars_100g":"56.3","fat_100g":30.9}}}""";
           case "8000000000001" -> body = """

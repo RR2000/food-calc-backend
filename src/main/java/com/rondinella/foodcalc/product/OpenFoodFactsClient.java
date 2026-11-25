@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -21,6 +22,9 @@ public class OpenFoodFactsClient {
 
   private static final String FIELDS =
       "code,product_name,product_name_en,generic_name,brands,quantity,image_front_small_url,nutriments";
+
+  /** The EU "estimated" mark after the quantity ("400 g e", "330 ml" and the U+212E sign): not part of the amount. */
+  private static final Pattern ESTIMATED = Pattern.compile("\\s+[e\u212e]\\s*$");
 
   private final RestClient http;
 
@@ -76,7 +80,7 @@ public class OpenFoodFactsClient {
           barcode,
           firstNonBlank(productName, productNameEn, genericName),
           brands == null ? null : firstNonBlank(brands.split(",")[0]),
-          firstNonBlank(quantity),
+          quantity == null ? null : firstNonBlank(ESTIMATED.matcher(quantity).replaceAll("")),
           imageUrl != null && imageUrl.startsWith("https://") ? imageUrl : null,
           new Product.Nutrients(
               round(kcal),

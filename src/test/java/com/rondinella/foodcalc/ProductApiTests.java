@@ -99,6 +99,14 @@ class ProductApiTests {
   }
 
   @Test
+  void aDroppedConnectionIsTriedAgain() throws Exception {
+    mvc.perform(get("/api/products/7000000000007"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Second try"));
+    assertThat(calls.stream().filter(c -> c.contains("7000000000007"))).hasSize(2);
+  }
+
+  @Test
   void health() throws Exception {
     mvc.perform(get("/actuator/health")).andExpect(status().isOk());
   }
@@ -110,6 +118,10 @@ class ProductApiTests {
         String path = exchange.getRequestURI().getPath();
         calls.add(exchange.getRequestURI() + " " + exchange.getRequestHeaders().getFirst("User-Agent"));
         String code = path.substring(path.lastIndexOf('/') + 1);
+        if (code.equals("7000000000007") && calls.stream().filter(c -> c.contains(code)).count() == 1) {
+          exchange.close(); // first try: connection closed without an answer
+          return;
+        }
         int status = 200;
         String body;
         switch (code) {
@@ -121,6 +133,8 @@ class ProductApiTests {
           case "8000000000001" -> body = """
               {"code":"8000000000001","status":1,"product":{"product_name":"","generic_name":"Water",
                "image_front_small_url":"http://insecure.example/x.jpg","nutriments":{"energy_100g":418.4}}}""";
+          case "7000000000007" -> body = """
+              {"code":"7000000000007","status":1,"product":{"product_name":"Second try","nutriments":{}}}""";
           case "5000000000005" -> {
             status = 503;
             body = "down";

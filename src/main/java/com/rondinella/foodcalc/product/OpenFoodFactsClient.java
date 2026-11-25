@@ -7,10 +7,13 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -26,13 +29,20 @@ public class OpenFoodFactsClient {
   /** The EU "estimated" mark after the quantity ("400 g e", "330 ml" and the U+212E sign): not part of the amount. */
   private static final Pattern ESTIMATED = Pattern.compile("\\s+[e\u212e]\\s*$");
 
+  private static final Logger log = LoggerFactory.getLogger(OpenFoodFactsClient.class);
+
   private final RestClient http;
 
   public OpenFoodFactsClient(
       @Value("${foodcalc.off.base-url}") String baseUrl,
       @Value("${foodcalc.off.user-agent}") String userAgent,
       @Value("${foodcalc.off.timeout}") Duration timeout) {
-    HttpClient client = HttpClient.newBuilder().connectTimeout(timeout).build();
+    // HTTP/1.1: with HTTP/2 the JDK client sometimes loses the first request on a fresh connection
+    // (IOException without a message, seen on prod right after the start)
+    HttpClient client = HttpClient.newBuilder()
+        .version(HttpClient.Version.HTTP_1_1)
+        .connectTimeout(timeout)
+        .build();
     JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(client);
     factory.setReadTimeout(timeout);
     this.http = RestClient.builder()
@@ -44,16 +54,27 @@ public class OpenFoodFactsClient {
 
   /** Empty when Open Food Facts does not have the barcode; an exception when it cannot be reached. */
   public Optional<Product> find(String barcode) {
-    OffResponse response = http.get()
+    OffResponse response;
+    try {
+      response = read(barcode);
+    } catch (ResourceAccessException e) {
+      // a connection dropped by the network or by Open Food Facts: one more try, then the error goes up
+      log.info("Open Food Facts, second try for {}: {}", barcode, e.getMostSpecificCause().toString());
+      response = read(barcode);
+    }
+    if (response == null || response.product() == null || !Integer.valueOf(1).equals(response.status())) {
+      return Optional.empty();
+    }
+    return Optional.of(response.product().toProduct(barcode));
+  }
+
+  private OffResponse read(String barcode) {
+    return http.get()
         .uri("/api/v2/product/{code}?fields={fields}", barcode, FIELDS)
         .retrieve()
         // "not found" comes back as 404 with a JSON body (status 0): it is an answer, not an error
         .onStatus(s -> s.value() == HttpStatus.NOT_FOUND.value(), (req, res) -> {})
         .body(OffResponse.class);
-    if (response == null || response.product() == null || !Integer.valueOf(1).equals(response.status())) {
-      return Optional.empty();
-    }
-    return Optional.of(response.product().toProduct(barcode));
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)

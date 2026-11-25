@@ -48,7 +48,7 @@ public class ProductController {
 
   @ExceptionHandler(RestClientException.class)
   ResponseEntity<?> upstream(RestClientException e) {
-    log.warn("Open Food Facts not reachable: {}", e.getMessage());
+    log.warn("Open Food Facts not reachable: {}", e.getMostSpecificCause().toString());
     return error(HttpStatus.BAD_GATEWAY, "Open Food Facts is not answering, try again later");
   }
 

@@ -37,6 +37,7 @@ class ProductApiTests {
   static void openFoodFacts(DynamicPropertyRegistry registry) {
     registry.add("foodcalc.off.base-url", () -> "http://127.0.0.1:" + off.getAddress().getPort());
     registry.add("foodcalc.off.timeout", () -> "2s");
+    registry.add("foodcalc.off.warm-up-barcode", () -> "6000000000006");
   }
 
   @AfterAll
@@ -104,6 +105,15 @@ class ProductApiTests {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Second try"));
     assertThat(calls.stream().filter(c -> c.contains("7000000000007"))).hasSize(2);
+  }
+
+  @Test
+  void openFoodFactsIsReadOnceRightAfterTheStart() throws Exception {
+    // the warm-up runs in the background: give it a moment
+    for (int i = 0; i < 50 && calls.stream().noneMatch(c -> c.contains("6000000000006")); i++) {
+      Thread.sleep(100);
+    }
+    assertThat(calls.stream().filter(c -> c.contains("6000000000006"))).hasSize(1);
   }
 
   @Test

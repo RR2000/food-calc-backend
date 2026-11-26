@@ -10,9 +10,9 @@
     <relativePath />
   </parent>
   <groupId>com.rondinella</groupId>
-  <artifactId>foodcalc</artifactId>
+  <artifactId>food-calc-backend</artifactId>
   <version>1.0.0</version>
-  <name>foodcalc</name>
+  <name>food-calc-backend</name>
   <description>Food calories from the barcode: REST API over Open Food Facts</description>
 
   <properties>

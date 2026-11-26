@@ -61,7 +61,7 @@ class ProductApiTests {
         // a number sent as a string
         .andExpect(jsonPath("$.per100g.sugars").value(56.3))
         .andExpect(jsonPath("$.per100g.salt").value(nullValue()));
-    assertThat(calls).anyMatch(c -> c.contains("foodcalc/1.0"));
+    assertThat(calls).anyMatch(c -> c.contains("food-calc-backend/1.0"));
   }
 
   @Test

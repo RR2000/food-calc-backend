@@ -3,7 +3,7 @@
 Calories of what you eat, from the barcode on the package. This is the small REST API (Spring Boot) behind the
 app: given a barcode it asks [Open Food Facts](https://world.openfoodfacts.org) and answers with name, brand and
 nutrients per 100 g. The app (scanner, grams, daily total) is in
-[foodcalcfe](https://github.com/RR2000/foodcalcfe).
+[food-calc-app](https://github.com/RR2000/food-calc-app).
 
 Demo: https://kcal.raoulrondinella.dev
 
@@ -45,7 +45,8 @@ No database: the food diary stays on the user's device.
 
 ## Image
 
-The CI publishes `ghcr.io/rr2000/foodcalc:main` (and `:sha-<commit>`) at every push on `main`.
+The CI publishes `ghcr.io/rr2000/food-calc-backend:main` (and `:sha-<commit>`) at every push on `main`;
+during the rename the same tags are also published under the old name `ghcr.io/rr2000/foodcalc`.
 
 Data from Open Food Facts, available under the
 [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).

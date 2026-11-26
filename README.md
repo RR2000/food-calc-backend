@@ -45,8 +45,7 @@ No database: the food diary stays on the user's device.
 
 ## Image
 
-The CI publishes `ghcr.io/rr2000/food-calc-backend:main` (and `:sha-<commit>`) at every push on `main`;
-during the rename the same tags are also published under the old name `ghcr.io/rr2000/foodcalc`.
+The CI publishes `ghcr.io/rr2000/food-calc-backend:main` (and `:sha-<commit>`) at every push on `main`.
 
 Data from Open Food Facts, available under the
 [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).

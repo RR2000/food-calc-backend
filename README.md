@@ -1,4 +1,4 @@
-# foodcalc - backend
+# Food Calc - backend
 
 Calories of what you eat, from the barcode on the package. This is the small REST API (Spring Boot) behind the
 app: given a barcode it asks [Open Food Facts](https://world.openfoodfacts.org) and answers with name, brand and

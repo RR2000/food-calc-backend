@@ -1,7 +1,8 @@
 name: CI
 
 # PR and main: tests (Open Food Facts is faked on a local port).
-# main: image on GitHub Container Registry, ghcr.io/rr2000/foodcalc:sha-<commit> and :main.
+# main: image on GitHub Container Registry, :sha-<commit> and :main, under two names during the rename:
+# ghcr.io/rr2000/food-calc-backend (new, like the repo) and ghcr.io/rr2000/foodcalc (old).
 on:
   push:
     branches: [main]
@@ -49,7 +50,9 @@ jobs:
           tags: |
             ghcr.io/rr2000/foodcalc:${{ steps.tag.outputs.tag }}
             ghcr.io/rr2000/foodcalc:main
+            ghcr.io/rr2000/food-calc-backend:${{ steps.tag.outputs.tag }}
+            ghcr.io/rr2000/food-calc-backend:main
           labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/RR2000/food-calc-backend
           cache-from: type=gha
           cache-to: type=gha,mode=max

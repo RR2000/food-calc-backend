@@ -100,7 +100,8 @@ public class OpenFoodFactsClient {
       return new Product(
           barcode,
           firstNonBlank(productName, productNameEn, genericName),
-          brands == null ? null : firstNonBlank(brands.split(",")[0]),
+          // "," or ", ," split to an empty array: never index it
+          brands == null ? null : firstNonBlank(brands.split(",")),
           quantity == null ? null : firstNonBlank(ESTIMATED.matcher(quantity).replaceAll("")),
           imageUrl != null && imageUrl.startsWith("https://") ? imageUrl : null,
           new Product.Nutrients(

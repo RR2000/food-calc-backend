@@ -117,6 +117,39 @@ class ProductApiTests {
   }
 
   @Test
+  void aProductWithNothingButTheBarcodeIsFoundWithEmptyValues() throws Exception {
+    mvc.perform(get("/api/products/9000000000001"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.barcode").value("9000000000001"))
+        .andExpect(jsonPath("$.name").value(nullValue()))
+        .andExpect(jsonPath("$.brand").value(nullValue()))
+        .andExpect(jsonPath("$.quantity").value(nullValue()))
+        .andExpect(jsonPath("$.per100g.kcal").value(nullValue()))
+        .andExpect(jsonPath("$.per100g.protein").value(nullValue()));
+  }
+
+  @Test
+  void oddBrandsAndValuesNeverBreakTheAnswer() throws Exception {
+    // brands "," split to an empty array (it was a 500); numbers that are not numbers are unknown, not errors
+    mvc.perform(get("/api/products/9000000000002"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Odd"))
+        .andExpect(jsonPath("$.brand").value(nullValue()))
+        .andExpect(jsonPath("$.quantity").value(nullValue()))
+        .andExpect(jsonPath("$.per100g.kcal").value(nullValue()))
+        .andExpect(jsonPath("$.per100g.fat").value(nullValue()))
+        .andExpect(jsonPath("$.per100g.salt").value(0.0));
+    mvc.perform(get("/api/products/9000000000003"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.brand").value("Second"));
+  }
+
+  @Test
+  void foundWithoutAProductIsNotFound() throws Exception {
+    mvc.perform(get("/api/products/9000000000004")).andExpect(status().isNotFound());
+  }
+
+  @Test
   void health() throws Exception {
     mvc.perform(get("/actuator/health")).andExpect(status().isOk());
   }
@@ -145,6 +178,16 @@ class ProductApiTests {
                "image_front_small_url":"http://insecure.example/x.jpg","nutriments":{"energy_100g":418.4}}}""";
           case "7000000000007" -> body = """
               {"code":"7000000000007","status":1,"product":{"product_name":"Second try","nutriments":{}}}""";
+          case "9000000000001" -> body = """
+              {"code":"9000000000001","status":1,"product":{}}""";
+          case "9000000000002" -> body = """
+              {"code":"9000000000002","status":1,"product":{"product_name":"Odd","brands":",","quantity":" e",
+               "nutriments":{"energy-kcal_100g":"n/a","energy_100g":"","fat_100g":null,"salt_100g":0}}}""";
+          case "9000000000003" -> body = """
+              {"code":"9000000000003","status":1,"product":{"product_name":"Brands","brands":" , Second",
+               "nutriments":null}}""";
+          case "9000000000004" -> body = """
+              {"code":"9000000000004","status":1}""";
           case "5000000000005" -> {
             status = 503;
             body = "down";
